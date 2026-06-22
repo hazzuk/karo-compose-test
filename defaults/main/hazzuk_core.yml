@@ -52,7 +52,9 @@ hazzuk_compose_traefik:
     version: v5.0.7-distroless@sha256:e31ae2bac566cfe4687a8a54121a884ce25c4869995075f8e7e3d352bcd59241
     domain: "tinyauth.{{ karo_compose_root_domain }}"
     log_level: info # trace, debug, info, warn, error, fatal, panic
-    oidc_client_id: ""
+    oidc:
+      client_id: ""
+      client_secret: ""
   cetusguard:
     image: docker.io/hectorm/cetusguard
     version: v1.1.3@sha256:b3dc5d2042869dd714c75985d94bb8c259df53b325ec6b1a2b57bcc3eac17689
@@ -61,4 +63,4 @@ hazzuk_compose_traefik:
 hazzuk_compose_traefik_secrets:
   traefik_acme_zone_api_token: "{{ hazzuk_compose_traefik.traefik.acme.zone_api_token }}"
   traefik_acme_dns_api_token: "{{ hazzuk_compose_traefik.traefik.dns_api_token }}"
-  tinyauth_oidc_client_secret: "{{ hazzuk_compose_traefik.tinyauth.oidc_client_secret }}"
+  tinyauth_oidc_client_secret: "{{ hazzuk_compose_traefik.tinyauth.oidc.client_secret }}"
