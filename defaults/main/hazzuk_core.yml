@@ -4,8 +4,6 @@
 
 ---
 
-# core
-
 hazzuk_core:
   - traefik
   - pocketid

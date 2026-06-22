@@ -1,4 +1,4 @@
-# hazzuk_core
+# karo-compose
 
 ```sh
 just add "https://github.com/hazzuk/karo-compose"
