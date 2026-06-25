@@ -2,14 +2,13 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-only
 
-# https://docs.karolabs.dev/stacks/core/pocket-id
-
+{% set compose = hazzuk_extra_whoami_stack %}
 ---
 name: pocketid
 services:
 
   pocketid:
-    image: {{ hazzuk_compose_pocketid.pocketid.image }}:{{ hazzuk_compose_pocketid.pocketid.version }}
+    image: {{ compose.pocketid.image }}:{{ compose.pocketid.version }}
     container_name: pocketid
     restart: {{ karo_compose_restart_policy }}
     read_only: false
@@ -22,11 +21,11 @@ services:
         target: /app/data
     labels:
       - traefik.enable=true
-      - traefik.http.routers.pocketid.rule=Host(`{{ karo_compose_oidc_domain }}`)
+      - traefik.http.routers.pocketid.rule=Host(`{{ karo_compose_oidc.domain }}`)
       - traefik.http.services.pocketid.loadbalancer.server.port=1411
     environment:
-      - LOG_LEVEL={{ hazzuk_compose_pocketid.pocketid.log_level }}
-      - APP_URL={{ karo_compose_oidc_url }}
+      - LOG_LEVEL={{ compose.pocketid.log_level }}
+      - APP_URL={{ karo_compose_oidc.url }}
       - ENCRYPTION_KEY_FILE=/run/secrets/pocketid_encryption_key
       - MAXMIND_LICENSE_KEY_FILE=/run/secrets/pocketid_maxmind_license_key
       - ANALYTICS_DISABLED=true

@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-only
 
+{% set compose = hazzuk_core_traefik_stack %}
 ---
 
 global:
@@ -10,11 +11,11 @@ global:
 
 # https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/
 log:
-  level: {{ hazzuk_compose_traefik.traefik.log_level | upper }}
+  level: {{ compose.traefik.log_level | upper }}
 
 # https://doc.traefik.io/traefik/reference/install-configuration/api-dashboard/
 api:
-  dashboard: {{ hazzuk_compose_traefik.traefik.dashboard.enabled | lower }}
+  dashboard: {{ compose.traefik.dashboard.enabled | lower }}
   disabledashboardad: true
 
 # https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/
@@ -44,19 +45,19 @@ entryPoints:
         certResolver: cloudflare
         domains:
           - main: "*.{{ karo_compose_root_domain }}"
-          {{ hazzuk_compose_traefik.traefik.custom_domains_raw }}
+          {{ compose.traefik.custom_domains_raw }}
 
 # https://doc.traefik.io/traefik/reference/install-configuration/tls/certificate-resolvers/acme/
 certificatesResolvers:
   cloudflare:
     acme:
       storage: /etc/traefik/acme/acme.json
-      email: {{ hazzuk_compose_traefik.traefik.acme.email }}
+      email: {{ compose.traefik.acme.email }}
       keyType: EC384
-{% if hazzuk_compose_traefik.traefik.acme.staging_enabled %}
-      caServer: {{ hazzuk_compose_traefik.traefik.acme.staging_ca_server_url }}
+{% if compose.traefik.acme.staging_enabled %}
+      caServer: {{ compose.traefik.acme.staging_ca_server_url }}
 {% else %}
-      caServer: {{ hazzuk_compose_traefik.traefik.acme.live_ca_server_url }}
+      caServer: {{ compose.traefik.acme.live_ca_server_url }}
 {% endif %}
       dnsChallenge:
         provider: cloudflare

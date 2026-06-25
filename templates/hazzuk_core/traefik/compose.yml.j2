@@ -2,13 +2,14 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-only
 
-{% set traefik_acme_volume = "traefik_acme_staging" if hazzuk_compose_traefik.traefik.acme.staging_enabled else "traefik_acme" %}
+{% set compose = hazzuk_core_traefik_stack %}
+{% set traefik_acme_volume_name = "traefik_acme_staging" if compose.traefik.acme.staging_enabled else "traefik_acme" %}
 ---
 name: traefik
 services:
 
   traefik:
-    image: {{ hazzuk_compose_traefik.traefik.image }}:{{ hazzuk_compose_traefik.traefik.version }}
+    image: {{ compose.traefik.image }}:{{ compose.traefik.version }}
     container_name: traefik
     restart: {{ karo_compose_restart_policy }}
     security_opt:
@@ -28,18 +29,18 @@ services:
         target: /etc/traefik/traefik.yml
         read_only: true
       - type: volume
-        source: {{ traefik_acme_volume }}
+        source: {{ traefik_acme_volume_name }}
         target: /etc/traefik/acme
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dashboard.rule=Host(`{{ hazzuk_compose_traefik.traefik.dashboard.domain }}`)
+      - traefik.http.routers.dashboard.rule=Host(`{{ compose.traefik.dashboard.domain }}`)
       - traefik.http.routers.dashboard.service=api@internal
       - traefik.http.services.dashboard.loadbalancer.server.port=8080
-{% if hazzuk_compose_traefik.traefik.dashboard.forward_auth_enabled %}
+{% if compose.traefik.dashboard.forward_auth_enabled %}
       # forward auth
       - traefik.http.routers.dashboard.middlewares=tinyauth
-      - tinyauth.apps.dashboard.config.domain={{ hazzuk_compose_traefik.traefik.dashboard.domain }}
-      - tinyauth.apps.dashboard.oauth.groups={{ karo_compose_oidc_admin_group }}
+      - tinyauth.apps.dashboard.config.domain={{ compose.traefik.dashboard.domain }}
+      - tinyauth.apps.dashboard.oauth.groups={{ karo_compose_auth.admin_group }}
 {% endif %}
     environment:
       - CF_ZONE_API_TOKEN_FILE=/run/secrets/traefik_acme_zone_api_token
@@ -54,7 +55,7 @@ services:
         condition: service_healthy
 
   tinyauth:
-    image: {{ hazzuk_compose_traefik.tinyauth.image }}:{{ hazzuk_compose_traefik.tinyauth.version }}
+    image: {{ compose.tinyauth.image }}:{{ compose.tinyauth.version }}
     container_name: tinyauth
     restart: {{ karo_compose_restart_policy }}
     # user: 1000:1000 # unsupported
@@ -66,29 +67,29 @@ services:
       frontend:
         ipv4_address: 172.18.0.253
     extra_hosts:
-      - "{{ karo_compose_oidc_domain }}:172.18.0.254"
+      - "{{ karo_compose_oidc.domain }}:172.18.0.254"
     labels:
       - traefik.enable=true
-      - traefik.http.routers.tinyauth.rule=Host(`{{ hazzuk_compose_traefik.tinyauth.domain }}`)
+      - traefik.http.routers.tinyauth.rule=Host(`{{ compose.tinyauth.domain }}`)
       - traefik.http.services.tinyauth.loadbalancer.server.port=3000
       - traefik.http.middlewares.tinyauth.forwardauth.address=http://tinyauth:3000/api/auth/traefik
       - traefik.http.middlewares.tinyauth.forwardauth.maxResponseBodySize=8192
       - traefik.http.middlewares.tinyauth.forwardauth.trustForwardHeader=true
     environment:
-      - TINYAUTH_LOG_LEVEL={{ hazzuk_compose_traefik.tinyauth.log_level }}
+      - TINYAUTH_LOG_LEVEL={{ compose.tinyauth.log_level }}
       - TINYAUTH_ANALYTICS_ENABLED=false
       - TINYAUTH_RESOURCES_ENABLED=false
       - TINYAUTH_UI_BACKGROUNDIMAGE=""
-      - TINYAUTH_APPURL=https://{{ hazzuk_compose_traefik.tinyauth.domain }}
+      - TINYAUTH_APPURL=https://{{ compose.tinyauth.domain }}
       - TINYAUTH_OAUTH_AUTOREDIRECT=pocketid
-      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_CLIENTID={{ hazzuk_compose_traefik.tinyauth.oidc.client_id }}
+      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_CLIENTID={{ compose.tinyauth.oidc.client_id }}
       - TINYAUTH_OAUTH_PROVIDERS_POCKETID_CLIENTSECRETFILE=/run/secrets/tinyauth_oidc_client_secret
-      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_AUTHURL={{ karo_compose_oidc_authorization_url }}
-      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_TOKENURL={{ karo_compose_oidc_token_url }}
-      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_USERINFOURL={{ karo_compose_oidc_userinfo_url }}
-      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_REDIRECTURL=https://{{ hazzuk_compose_traefik.tinyauth.domain }}/api/oauth/callback/pocketid
+      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_AUTHURL={{ karo_compose_oidc.authorization.url }}
+      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_TOKENURL={{ karo_compose_oidc.token.url }}
+      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_USERINFOURL={{ karo_compose_oidc.userinfo.url }}
+      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_REDIRECTURL=https://{{ compose.tinyauth.domain }}/api/oauth/callback/pocketid
       - TINYAUTH_OAUTH_PROVIDERS_POCKETID_SCOPES=openid email profile groups
-      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_NAME={{ karo_compose_oidc_provider_name }}
+      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_NAME={{ karo_compose_auth.provider_name }}
       - DOCKER_HOST=tcp://cetusguard:2375
     secrets:
       - tinyauth_oidc_client_secret
@@ -96,7 +97,7 @@ services:
       - cetusguard
 
   cetusguard:
-    image: {{ hazzuk_compose_traefik.cetusguard.image }}:{{ hazzuk_compose_traefik.cetusguard.version }}
+    image: {{ compose.cetusguard.image }}:{{ compose.cetusguard.version }}
     container_name: cetusguard_traefik
     restart: {{ karo_compose_restart_policy }}
     read_only: true
@@ -117,7 +118,7 @@ services:
         GET %API_PREFIX_CONTAINERS%/json
         ! inspect a container
         GET %API_PREFIX_CONTAINERS%/%CONTAINER_ID_OR_NAME%/json
-      CETUSGUARD_LOG_LEVEL: "{{ hazzuk_compose_traefik.cetusguard.log_level }}"
+      CETUSGUARD_LOG_LEVEL: "{{ compose.cetusguard.log_level }}"
 
 networks:
   socketproxy_traefik:
@@ -143,8 +144,8 @@ networks:
           gateway: 172.18.0.1
 
 volumes:
-  {{ traefik_acme_volume }}:
-    name: {{ traefik_acme_volume }}
+  {{ traefik_acme_volume_name }}:
+    name: {{ traefik_acme_volume_name }}
 
 secrets:
   traefik_acme_zone_api_token:
