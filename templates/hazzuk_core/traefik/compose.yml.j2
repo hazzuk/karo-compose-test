@@ -41,7 +41,7 @@ services:
       # forward auth
       - traefik.http.routers.dashboard.middlewares=tinyauth
       - tinyauth.apps.dashboard.config.domain={{ compose.traefik.dashboard.domain }}
-      - tinyauth.apps.dashboard.oauth.groups={{ karo_compose_auth.admin_group }}
+      - tinyauth.apps.dashboard.oauth.groups={{ karo_compose_oidc_admin_group }}
 {% endif %}
     environment:
       - CF_ZONE_API_TOKEN_FILE=/run/secrets/traefik_acme_zone_api_token
@@ -68,7 +68,7 @@ services:
       frontend:
         ipv4_address: 172.18.0.253
     extra_hosts:
-      - "{{ karo_compose_oidc.domain }}:172.18.0.254"
+      - "{{ karo_compose_oidc_domain }}:172.18.0.254"
     labels:
       - traefik.enable=true
       - traefik.http.routers.tinyauth.rule=Host(`{{ compose.tinyauth.domain }}`)
@@ -85,12 +85,12 @@ services:
       - TINYAUTH_OAUTH_AUTOREDIRECT=pocketid
       - TINYAUTH_OAUTH_PROVIDERS_POCKETID_CLIENTID={{ compose.tinyauth.oidc.client_id }}
       - TINYAUTH_OAUTH_PROVIDERS_POCKETID_CLIENTSECRETFILE=/run/secrets/tinyauth_oidc_client_secret
-      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_AUTHURL={{ karo_compose_oidc.authorization.url }}
-      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_TOKENURL={{ karo_compose_oidc.token.url }}
-      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_USERINFOURL={{ karo_compose_oidc.userinfo.url }}
+      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_AUTHURL={{ karo_compose_oidc_authorization_url }}
+      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_TOKENURL={{ karo_compose_oidc_token_url }}
+      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_USERINFOURL={{ karo_compose_oidc_userinfo_url }}
       - TINYAUTH_OAUTH_PROVIDERS_POCKETID_REDIRECTURL=https://{{ compose.tinyauth.domain }}/api/oauth/callback/pocketid
       - TINYAUTH_OAUTH_PROVIDERS_POCKETID_SCOPES=openid email profile groups
-      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_NAME={{ karo_compose_auth.provider_name }}
+      - TINYAUTH_OAUTH_PROVIDERS_POCKETID_NAME={{ karo_compose_oidc_provider_name }}
       - DOCKER_HOST=tcp://cetusguard:2375
     secrets:
       - tinyauth_oidc_client_secret

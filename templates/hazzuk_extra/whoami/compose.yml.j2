@@ -25,7 +25,7 @@ services:
       # forward auth
       - traefik.http.routers.whoami.middlewares=tinyauth
       - tinyauth.apps.whoami.config.domain={{ compose.whoami.domain }}
-      - tinyauth.apps.whoami.oauth.groups={{ karo_compose_auth.admin_group }}
+      - tinyauth.apps.whoami.oauth.groups={{ karo_compose_oidc_admin_group }}
       - tinyauth.apps.whoami.path.allow=^\/api
 {% endif %}
 
