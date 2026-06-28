@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-only
 
-{% set compose = hazzuk_core_traefik_stack %}
+# hazzuk_core_traefik
+
 {% set traefik_acme_volume_name = "traefik_acme_staging" if compose.traefik.acme.staging_enabled else "traefik_acme" %}
 ---
 name: traefik

@@ -12,9 +12,8 @@ hazzuk_core:
 
 hazzuk_core_pocketid_enabled: false
 
-hazzuk_core_pocketid_stack:
+hazzuk_core_pocketid_stack_defaults:
   pocketid:
-    enabled: true
     image: ghcr.io/pocket-id/pocket-id
     version: v2.6.2@sha256:1cc51e5b36fa7ec31368d3efb24ba362be6dce20f3cc0a2852843527bd5110f0
     log_level: info # debug, info, warn, error
@@ -22,14 +21,16 @@ hazzuk_core_pocketid_stack:
     maxmind_license_key: ""
 
 hazzuk_core_pocketid_secrets:
-  pocketid_encryption_key: "{{ hazzuk_compose_pocketid.pocketid.encryption_key }}"
-  pocketid_maxmind_license_key: "{{ hazzuk_compose_pocketid.pocketid.maxmind_license_key }}"
+  # required
+  pocketid_encryption_key: "{{ hazzuk_core_pocketid_stack.pocketid.encryption_key }}"
+  # optional
+  pocketid_maxmind_license_key: "{{ hazzuk_core_pocketid_stack.pocketid.maxmind_license_key | default('') }}"
 
 # traefik
 
 hazzuk_core_traefik_enabled: false
 
-hazzuk_core_traefik_stack:
+hazzuk_core_traefik_stack_defaults:
   traefik:
     image: docker.io/traefik
     version: v3.6.15@sha256:8cb20d16e01a53d8d7f7696ac2f1af7d200d5c9984d226ce2299731d9eab6d6c
@@ -61,6 +62,6 @@ hazzuk_core_traefik_stack:
     log_level: 7 # 0-7 (min to max verbosity)
 
 hazzuk_core_traefik_secrets:
-  traefik_acme_zone_api_token: "{{ hazzuk_compose_traefik.traefik.acme.zone_api_token }}"
-  traefik_acme_dns_api_token: "{{ hazzuk_compose_traefik.traefik.acme.dns_api_token }}"
-  tinyauth_oidc_client_secret: "{{ hazzuk_compose_traefik.tinyauth.oidc.client_secret }}"
+  traefik_acme_zone_api_token: "{{ hazzuk_core_traefik_stack.traefik.acme.zone_api_token }}"
+  traefik_acme_dns_api_token: "{{ hazzuk_core_traefik_stack.traefik.acme.dns_api_token }}"
+  tinyauth_oidc_client_secret: "{{ hazzuk_core_traefik_stack.tinyauth.oidc.client_secret }}"
